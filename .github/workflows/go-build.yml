@@ -1,0 +1,105 @@
+name: Go Build
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Select build target'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/7
+          - windows/amd64
+          - darwin/amd64
+          - darwin/arm64
+
+jobs:
+  matrix_prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        shell: bash
+        run: |
+          TARGET="${{ github.event.inputs.target }}"
+          # Default to 'all' if triggered by push/pr where inputs.target is empty
+          if [ -z "$TARGET" ]; then TARGET="all"; fi
+          
+          echo "Selected target: $TARGET"
+          
+          if [ "$TARGET" == "all" ]; then
+            MATRIX='{"include":[
+              {"goos":"linux","goarch":"amd64","goarm":""},
+              {"goos":"linux","goarch":"arm64","goarm":""},
+              {"goos":"linux","goarch":"arm","goarm":"7"},
+              {"goos":"windows","goarch":"amd64","goarm":""},
+              {"goos":"darwin","goarch":"amd64","goarm":""},
+              {"goos":"darwin","goarch":"arm64","goarm":""}
+            ]}'
+          elif [ "$TARGET" == "linux/amd64" ]; then
+             MATRIX='{"include":[{"goos":"linux","goarch":"amd64","goarm":""}]}'
+          elif [ "$TARGET" == "linux/arm64" ]; then
+             MATRIX='{"include":[{"goos":"linux","goarch":"arm64","goarm":""}]}'
+          elif [ "$TARGET" == "linux/arm/7" ]; then
+             MATRIX='{"include":[{"goos":"linux","goarch":"arm","goarm":"7"}]}'
+          elif [ "$TARGET" == "windows/amd64" ]; then
+             MATRIX='{"include":[{"goos":"windows","goarch":"amd64","goarm":""}]}'
+          elif [ "$TARGET" == "darwin/amd64" ]; then
+             MATRIX='{"include":[{"goos":"darwin","goarch":"amd64","goarm":""}]}'
+          elif [ "$TARGET" == "darwin/arm64" ]; then
+             MATRIX='{"include":[{"goos":"darwin","goarch":"arm64","goarm":""}]}'
+          fi
+          
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: matrix_prep
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.matrix_prep.outputs.matrix) }}
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+
+    - name: Initialize Module
+      run: |
+        if [ ! -f go.mod ]; then
+          go mod init podcast2m3u || true
+          go mod tidy
+        fi
+
+    - name: Build
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        GOARM: ${{ matrix.goarm }}
+      run: |
+        OUTPUT_NAME=podcast2m3u-${{ matrix.goos }}-${{ matrix.goarch }}
+        if [ "${{ matrix.goos }}" = "windows" ]; then
+          OUTPUT_NAME+='.exe'
+        fi
+        if [ -n "${{ matrix.goarm }}" ]; then
+          OUTPUT_NAME+='-v${{ matrix.goarm }}'
+        fi
+        mkdir -p build
+        go build -v -o build/$OUTPUT_NAME .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: podcast2m3u-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm }}
+        path: build/*

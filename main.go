@@ -17,7 +17,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(podcast.Title)
+		// fmt.Println(podcast.Title)
 		M3u(podcast)
 	} 
 }
