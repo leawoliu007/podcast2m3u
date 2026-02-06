@@ -37,14 +37,7 @@ jobs:
           echo "Selected target: $TARGET"
           
           if [ "$TARGET" == "all" ]; then
-            MATRIX='{"include":[
-              {"goos":"linux","goarch":"amd64","goarm":""},
-              {"goos":"linux","goarch":"arm64","goarm":""},
-              {"goos":"linux","goarch":"arm","goarm":"7"},
-              {"goos":"windows","goarch":"amd64","goarm":""},
-              {"goos":"darwin","goarch":"amd64","goarm":""},
-              {"goos":"darwin","goarch":"arm64","goarm":""}
-            ]}'
+            MATRIX='{"include":[{"goos":"linux","goarch":"amd64","goarm":""},{"goos":"linux","goarch":"arm64","goarm":""},{"goos":"linux","goarch":"arm","goarm":"7"},{"goos":"windows","goarch":"amd64","goarm":""},{"goos":"darwin","goarch":"amd64","goarm":""},{"goos":"darwin","goarch":"arm64","goarm":""}]}'
           elif [ "$TARGET" == "linux/amd64" ]; then
              MATRIX='{"include":[{"goos":"linux","goarch":"amd64","goarm":""}]}'
           elif [ "$TARGET" == "linux/arm64" ]; then
