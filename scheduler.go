@@ -8,9 +8,7 @@ import (
 	"io"
 	"net/http"
 	"crypto/tls"
-	"github.com/robfig/cron/v3"
-	"path/filepath"
-	"github.com/nsoufr/podfeed"
+	"github.com/mmcdole/gofeed"
 )
 
 func StartScheduler(config Config) {
@@ -47,32 +45,19 @@ func StartScheduler(config Config) {
 }
 
 func processSubscription(sub Subscription, globalConfig GlobalConfig) {
-	var podcast podfeed.Podcast
+	var feed *gofeed.Feed
 	var err error
+	
+	fp := gofeed.NewParser()
 
 	if globalConfig.SkipCertVerify {
 		tr := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
-		client := &http.Client{Transport: tr}
-
-		resp, err := client.Get(sub.URL)
-		if err != nil {
-			log.Printf("Failed to fetch podcast (insecure) %s: %v", sub.Name, err)
-			return
-		}
-		defer resp.Body.Close()
-
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("Failed to read response body %s: %v", sub.Name, err)
-			return
-		}
-
-		podcast, err = podfeed.Parse(bodyBytes)
-	} else {
-		podcast, err = podfeed.Fetch(context.Background(), sub.URL)
+		fp.Client = &http.Client{Transport: tr}
 	}
+	
+	feed, err = fp.ParseURL(sub.URL)
 
 	if err != nil {
 		log.Printf("Failed to fetch/parse podcast %s: %v", sub.Name, err)
@@ -98,7 +83,7 @@ func processSubscription(sub Subscription, globalConfig GlobalConfig) {
 	outputPath := filepath.Join(globalConfig.OutputPath, filename)
 
 	// Update M3U
-	err = M3u(podcast, outputPath)
+	err = M3u(feed, outputPath)
 	if err != nil {
 		log.Printf("Failed to write M3U for %s: %v", sub.Name, err)
 	} else {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nsoufr/podfeed"
+	"github.com/mmcdole/gofeed"
 )
 
-func M3u(podcast podfeed.Podcast, outputPath string) error {
+func M3u(feed *gofeed.Feed, outputPath string) error {
 	file, err := os.Create(outputPath)
 	if err != nil {
 		return err
@@ -15,12 +15,20 @@ func M3u(podcast podfeed.Podcast, outputPath string) error {
 	defer file.Close()
 
 	fmt.Fprintln(file, "#EXTM3U")
-	for _, episode := range podcast.Items {
+	for _, item := range feed.Items {
+		url := ""
+		if len(item.Enclosures) > 0 {
+			url = item.Enclosures[0].URL
+		}
+		if url == "" {
+			continue // Skip items without audio
+		}
+		
 		fmt.Fprintf(file, "#EXTINF:%d,%s - %s\n%s\n",
 			-1,
-			podcast.Title,
-			episode.Title,
-			episode.Enclosure.Url)
+			feed.Title,
+			item.Title,
+			url)
 	}
 	return nil
 }

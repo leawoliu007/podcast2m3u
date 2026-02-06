@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"gopkg.in/yaml.v3"
-	"github.com/nsoufr/podfeed"
+	"github.com/mmcdole/gofeed"
 )
 
 func main() {
@@ -23,7 +23,8 @@ func main() {
 
 	// Legacy mode support
 	if legacyPodcastURI != "" {
-		podcast, err := podfeed.Fetch(context.Background(), legacyPodcastURI)
+		fp := gofeed.NewParser()
+		feed, err := fp.ParseURL(legacyPodcastURI)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -36,8 +37,12 @@ func main() {
 		// Let's just re-implement the simple print for legacy to avoid breaking it too much, 
 		// or better: let's treat legacy as a separate quick flow.
 		fmt.Println("#EXTM3U")
-		for _, episode := range podcast.Items {
-			fmt.Printf("#EXTINF:%d,%s - %s\n%s\n", -1, podcast.Title, episode.Title, episode.Enclosure.Url)
+		for _, item := range feed.Items {
+			url := ""
+			if len(item.Enclosures) > 0 {
+				url = item.Enclosures[0].URL
+			}
+			fmt.Printf("#EXTINF:%d,%s - %s\n%s\n", -1, feed.Title, item.Title, url)
 		}
 		return
 	}
