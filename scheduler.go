@@ -8,6 +8,9 @@ import (
 	"crypto/tls"
 	"path/filepath"
 
+	"regexp"
+	"strings"
+
 	"github.com/robfig/cron/v3"
 	"github.com/mmcdole/gofeed"
 )
@@ -79,15 +82,30 @@ func processSubscription(sub Subscription, globalConfig GlobalConfig) {
 	}
 
 	// Construct Output Path: GlobalPath / Name.m3u
-	// Sanitize name for filename? For now assume Name is safe or user handles it.
-	filename := fmt.Sprintf("%s.m3u", sub.Name)
-	outputPath := filepath.Join(globalConfig.OutputPath, filename)
-
+	// Sanitize name for filename
+	filename := filepath.Join(globalConfig.OutputPath, fmt.Sprintf("%s.m3u", sanitizeFilename(sub.Name)))
+	
 	// Update M3U
-	err = M3u(feed, outputPath)
+	// Use WriteM3u with a file
+	file, err := os.Create(filename)
+	if err != nil {
+		log.Printf("Failed to create file %s: %v", filename, err)
+		return
+	}
+	defer file.Close()
+
+	err = WriteM3u(feed, file)
 	if err != nil {
 		log.Printf("Failed to write M3U for %s: %v", sub.Name, err)
 	} else {
-		log.Printf("Successfully updated %s", sub.Name)
+		log.Printf("Successfully updated %s -> %s", sub.Name, filename)
 	}
+}
+
+func sanitizeFilename(name string) string {
+	// Define invalid characters for Windows/Linux filenames
+	invalid := regexp.MustCompile(`[<>:"/\\|?*]`)
+	// Replace with hyphen
+	sanitized := invalid.ReplaceAllString(name, "-")
+	return strings.TrimSpace(sanitized)
 }
