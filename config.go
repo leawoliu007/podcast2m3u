@@ -5,6 +5,7 @@ type GlobalConfig struct {
 	DatabasePath   string `yaml:"database_path" json:"database_path"`
 	OutputPath     string `yaml:"output_path" json:"output_path"`     // Directory for M3U files
 	WebServerPort  string `yaml:"web_server_port" json:"web_server_port"` // Port for web interface (default: 8080)
+	SkipCertVerify bool   `yaml:"skip_cert_verify" json:"skip_cert_verify"` // Skip SSL certificate verification
 }
 
 type Subscription struct {

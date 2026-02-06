@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"net/http"
+	"crypto/tls"
 	"github.com/robfig/cron/v3"
 	"path/filepath"
 	"github.com/nsoufr/podfeed"
@@ -45,9 +47,29 @@ func StartScheduler(config Config) {
 }
 
 func processSubscription(sub Subscription, globalConfig GlobalConfig) {
-	podcast, err := podfeed.Fetch(context.Background(), sub.URL)
+	var podcast *podfeed.Podcast
+	var err error
+
+	if globalConfig.SkipCertVerify {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
+
+		resp, err := client.Get(sub.URL)
+		if err != nil {
+			log.Printf("Failed to fetch podcast (insecure) %s: %v", sub.Name, err)
+			return
+		}
+		defer resp.Body.Close()
+
+		podcast, err = podfeed.Parse(resp.Body)
+	} else {
+		podcast, err = podfeed.Fetch(context.Background(), sub.URL)
+	}
+
 	if err != nil {
-		log.Printf("Failed to fetch podcast %s: %v", sub.Name, err)
+		log.Printf("Failed to fetch/parse podcast %s: %v", sub.Name, err)
 		return
 	}
 
