@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	// "fmt"
 	"log"
 	"os"
 	"github.com/nsoufr/podfeed"
@@ -13,7 +14,7 @@ func main() {
 		log.Fatal(confError)
 		os.Exit(1)
 	} else {
-		podcast, err := podfeed.Fetch(conf.PodcastURI)
+		podcast, err := podfeed.Fetch(context.Background(), conf.PodcastURI)
 		if err != nil {
 			log.Fatal(err)
 		}
