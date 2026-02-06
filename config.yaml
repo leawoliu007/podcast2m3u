@@ -1,0 +1,9 @@
+global:
+  update_interval: "0 * * * *" # Run every hour
+  database_path: "podcast2m3u.db"
+
+subscriptions:
+  - name: "VOA Learning English"
+    url: "https://learningenglish.voanews.com/podcast/?count=20&zoneId=1579"
+    output_path: "voa.m3u"
+    cron: "*/30 * * * *" # Run every 30 minutes
