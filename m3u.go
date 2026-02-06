@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/nandosousafr/podfeed"
+	"github.com/nsoufr/podfeed"
 )
 
 func M3u(podcast podfeed.Podcast) {
