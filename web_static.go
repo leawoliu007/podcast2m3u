@@ -1,9 +1,7 @@
 package main
 
-import "embed"
-
-//go:embed web/index.html
-var content embed.FS
+// content is stored in constant below
+// var content embed.FS
 
 const htmlContent = `<!DOCTYPE html>
 <html lang="en">
