@@ -72,8 +72,8 @@ jobs:
       run: |
         if [ ! -f go.mod ]; then
           go mod init podcast2m3u || true
-          go mod tidy
         fi
+        go mod tidy
 
     - name: Build
       env:
