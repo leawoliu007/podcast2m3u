@@ -3,7 +3,7 @@
     database_path: podcast2m3u.db
     output_path: /mnt/sdcard/Music/playlists/
     web_server_port: "8080"
-  skip_cert_verify: true
+    skip_cert_verify: true
 
 subscriptions:
   - name: "VOA Learning English"

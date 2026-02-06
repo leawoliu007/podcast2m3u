@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"io"
 	"net/http"
 	"crypto/tls"
 	"github.com/robfig/cron/v3"
@@ -47,7 +47,7 @@ func StartScheduler(config Config) {
 }
 
 func processSubscription(sub Subscription, globalConfig GlobalConfig) {
-	var podcast *podfeed.Podcast
+	var podcast podfeed.Podcast
 	var err error
 
 	if globalConfig.SkipCertVerify {
@@ -63,7 +63,13 @@ func processSubscription(sub Subscription, globalConfig GlobalConfig) {
 		}
 		defer resp.Body.Close()
 
-		podcast, err = podfeed.Parse(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Failed to read response body %s: %v", sub.Name, err)
+			return
+		}
+
+		podcast, err = podfeed.Parse(bodyBytes)
 	} else {
 		podcast, err = podfeed.Fetch(context.Background(), sub.URL)
 	}
