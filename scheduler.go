@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/robfig/cron/v3"
 	"path/filepath"
@@ -54,7 +55,7 @@ func processSubscription(sub Subscription, globalConfig GlobalConfig) {
 	dbPodcast := Podcast{
 		Name: sub.Name,
 		URL:  sub.URL,
-		LastUpdated: podcast.PubDate, // Assuming PubDate matches format or we just store string
+		LastUpdated: time.Now().Format(time.RFC3339),
 	}
 	
 	// FirstOrCreate fits well here to avoid duplicates
