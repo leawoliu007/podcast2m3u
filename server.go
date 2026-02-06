@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
