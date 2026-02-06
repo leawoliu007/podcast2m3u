@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/robfig/cron/v3"
+	"path/filepath"
 	"github.com/nsoufr/podfeed"
 )
 
@@ -27,7 +28,7 @@ func StartScheduler(config Config) {
 
 		_, err := c.AddFunc(schedule, func() {
 			log.Printf("Updating subscription: %s", sub.Name)
-			processSubscription(sub)
+			processSubscription(sub, config.Global)
 		})
 
 		if err != nil {
@@ -42,7 +43,7 @@ func StartScheduler(config Config) {
 	select {} // Block forever
 }
 
-func processSubscription(sub Subscription) {
+func processSubscription(sub Subscription, globalConfig GlobalConfig) {
 	podcast, err := podfeed.Fetch(context.Background(), sub.URL)
 	if err != nil {
 		log.Printf("Failed to fetch podcast %s: %v", sub.Name, err)
@@ -62,8 +63,13 @@ func processSubscription(sub Subscription) {
 		log.Printf("Failed to update DB for %s: %v", sub.Name, result.Error)
 	}
 
+	// Construct Output Path: GlobalPath / Name.m3u
+	// Sanitize name for filename? For now assume Name is safe or user handles it.
+	filename := fmt.Sprintf("%s.m3u", sub.Name)
+	outputPath := filepath.Join(globalConfig.OutputPath, filename)
+
 	// Update M3U
-	err = M3u(podcast, sub.OutputPath)
+	err = M3u(podcast, outputPath)
 	if err != nil {
 		log.Printf("Failed to write M3U for %s: %v", sub.Name, err)
 	} else {

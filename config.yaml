@@ -1,9 +1,10 @@
 global:
   update_interval: "0 * * * *" # Run every hour
   database_path: "podcast2m3u.db"
+  output_path: "./playlists"   # Global directory for M3U files
 
 subscriptions:
   - name: "VOA Learning English"
     url: "https://learningenglish.voanews.com/podcast/?count=20&zoneId=1579"
-    output_path: "voa.m3u"
+    # output_path removed; file will be "./playlists/VOA Learning English.m3u"
     cron: "*/30 * * * *" # Run every 30 minutes

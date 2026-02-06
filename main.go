@@ -62,7 +62,7 @@ func main() {
 		// Run once for all subscriptions
 		log.Println("Running one-time update for all subscriptions...")
 		for _, sub := range config.Subscriptions {
-			processSubscription(sub)
+			processSubscription(sub, config.Global)
 		}
 	}
 }
