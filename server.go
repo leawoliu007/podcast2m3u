@@ -93,6 +93,13 @@ func handleSubscriptions(w http.ResponseWriter, r *http.Request) {
 			currentConfig.Subscriptions = append(currentConfig.Subscriptions, newSub)
 		}
 		saveConfig()
+
+		// Trigger immediate update
+		go func(sub Subscription, globalCfg GlobalConfig) {
+			log.Printf("Triggering immediate update for new subscription: %s", sub.Name)
+			processSubscription(sub, globalCfg)
+		}(newSub, currentConfig.Global)
+
 		json.NewEncoder(w).Encode(currentConfig.Subscriptions)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
