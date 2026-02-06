@@ -54,10 +54,18 @@ Updates all subscriptions defined in `config.yaml` immediately and then exits.
 ./podcast2m3u --config config.yaml
 ```
 
-### 2. Daemon Mode (Service)
-Starts the service and runs updates according to the scheduled cron jobs.
+### 2. Daemon Mode (Service & Web UI)
+Starts the service, runs updates according to the scheduled cron jobs, and **launches the Web Management Interface**.
+
 ```bash
 ./podcast2m3u --config config.yaml --daemon
+```
+
+By default, the web interface is available at `http://localhost:8080`.
+You can change the port in `config.yaml`:
+```yaml
+global:
+  web_server_port: "9090"
 ```
 
 ### 3. Legacy Mode (Single URL)

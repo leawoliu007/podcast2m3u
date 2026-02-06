@@ -2,6 +2,7 @@ global:
   update_interval: "0 * * * *" # Run every hour
   database_path: "podcast2m3u.db"
   output_path: "./playlists"   # Global directory for M3U files
+  web_server_port: "8080"      # Port for web interface
 
 subscriptions:
   - name: "VOA Learning English"

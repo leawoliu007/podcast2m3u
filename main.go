@@ -57,6 +57,9 @@ func main() {
 	InitDB(config.Global.DatabasePath)
 
 	if daemonMode {
+		// Start Web Server
+		go StartWebServer(config.Global.WebServerPort, configPath, config)
+
 		StartScheduler(config)
 	} else {
 		// Run once for all subscriptions

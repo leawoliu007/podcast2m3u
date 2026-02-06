@@ -4,6 +4,7 @@ type GlobalConfig struct {
 	UpdateInterval string `yaml:"update_interval"` // Cron expression
 	DatabasePath   string `yaml:"database_path"`
 	OutputPath     string `yaml:"output_path"`     // Directory for M3U files
+	WebServerPort  string `yaml:"web_server_port"` // Port for web interface (default: 8080)
 }
 
 type Subscription struct {
